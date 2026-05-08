@@ -64,8 +64,6 @@
         <transport>hwbinder</transport>
         <fqname>@1.2::IRadio/em1</fqname>
         <fqname>@1.2::IRadio/em2</fqname>
-        <fqname>@1.2::IRadio/imsAospSlot1</fqname>
-        <fqname>@1.2::IRadio/imsAospSlot2</fqname>
         <fqname>@1.2::IRadio/se1</fqname>
         <fqname>@1.2::IRadio/se2</fqname>
         <fqname>@1.2::IRadio/slot1</fqname>
@@ -74,8 +72,6 @@
         <fqname>@1.2::ISap/slot2</fqname>
         <fqname>@1.6::IRadio/em1</fqname>
         <fqname>@1.6::IRadio/em2</fqname>
-        <fqname>@1.6::IRadio/imsAospSlot1</fqname>
-        <fqname>@1.6::IRadio/imsAospSlot2</fqname>
         <fqname>@1.6::IRadio/se1</fqname>
         <fqname>@1.6::IRadio/se2</fqname>
         <fqname>@1.6::IRadio/slot1</fqname>

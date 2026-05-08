@@ -53,23 +53,53 @@ BOARD_INCLUDE_DTB_IN_BOOTIMG := true
 BOARD_KERNEL_CMDLINE += bootopt=64S3,32N2,64N2
 
 BOARD_KERNEL_PAGESIZE := 4096
-BOARD_KERNEL_BASE := 0x3fff8000
+BOARD_KERNEL_BASE := 0x00000000
 BOARD_KERNEL_OFFSET := 0x00008000
-BOARD_RAMDISK_OFFSET := 0x26f08000
-BOARD_KERNEL_TAGS_OFFSET := 0x07c88000
-BOARD_DTB_OFFSET := 0x07c88000
+BOARD_RAMDISK_OFFSET := 0x00000000
+BOARD_KERNEL_TAGS_OFFSET := 0x00000000
+BOARD_DTB_OFFSET := 0x00000000
 
-BOARD_MKBOOTIMG_ARGS += --kernel_offset $(BOARD_KERNEL_OFFSET)
-BOARD_MKBOOTIMG_ARGS += --ramdisk_offset $(BOARD_RAMDISK_OFFSET)
-BOARD_MKBOOTIMG_ARGS += --tags_offset $(BOARD_KERNEL_TAGS_OFFSET)
-BOARD_MKBOOTIMG_ARGS += --dtb_offset $(BOARD_DTB_OFFSET)
 BOARD_MKBOOTIMG_ARGS += --header_version $(BOARD_BOOT_HEADER_VERSION)
 
+# Encryption
+TW_INCLUDE_CRYPTO := true
+TW_INCLUDE_CRYPTO_FBE := true
+TW_INCLUDE_FBE_METADATA_DECRYPT := true
+PLATFORM_VERSION := 14
+PLATFORM_SECURITY_PATCH := 2025-03-01
+VENDOR_SECURITY_PATCH := 2025-03-01
+
+# TWRP Configuration
+TW_THEME := portrait_hdpi
+TW_EXTRA_LANGUAGES := true
+TW_SCREEN_BLANK_ON_BOOT := true
+TW_INPUT_BLACKLIST := "hbtp_vm"
+TW_USE_TOOLBOX := true
+BOARD_HAS_NO_REAL_SDCARD := true
+RECOVERY_SDCARD_ON_DATA := true
+TW_INCLUDE_CRYPTO := true
+TW_INCLUDE_NTFS_3G := true
+TW_USE_EXTERNAL_STORAGE := true
+TW_INCLUDE_LIBRESETPROP := true
+TW_INCLUDE_RESETPROP := true
+TARGET_RECOVERY_DEVICE_MODULES += \
+    libion \
+    libxml2 \
+    rebootmode \
+    android.hardware.security.keymint-service.mitee \
+    android.hardware.security.sharedsecret-V1-ndk \
+    android.hardware.security.secureclock-V1-ndk \
+    android.hardware.gatekeeper@1.0-service \
+    libgatekeeper \
+    libkeymaster_messages
+TW_RECOVERY_ADDITIONAL_RELINK_LIBRARY_FILES += \
+    $(TARGET_OUT_SHARED_LIBRARIES)/libxml2.so
+
 # Kernel
-# Kill lineage kernel build task while preserving kernel
+# Preserve kernel
 TARGET_NO_KERNEL_OVERRIDE := true
 
-# Workaround to make lineage's soong generator work
+# Workaround to make soong generator work
 TARGET_KERNEL_SOURCE := device/xiaomi/beryl-kernel/kernel-headers
 
 LOCAL_KERNEL := $(KERNEL_PATH)/Image.gz
@@ -84,12 +114,9 @@ BOARD_PREBUILT_DTBIMAGE_DIR := $(KERNEL_PATH)/dtb
 BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(strip $(shell cat $(KERNEL_PATH)/modules.load.vendor_ramdisk))
 BOARD_VENDOR_RAMDISK_KERNEL_MODULES := $(addprefix $(KERNEL_PATH)/modules_ramdisk/, $(BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD))
 
-# Also add recovery modules to vendor ramdisk
+# Recovery modules
 BOARD_VENDOR_RAMDISK_RECOVERY_KERNEL_MODULES_LOAD := $(strip $(shell cat $(KERNEL_PATH)/modules.load.recovery))
-RECOVERY_MODULES := $(addprefix $(KERNEL_PATH)/modules_ramdisk/, $(BOARD_VENDOR_RAMDISK_RECOVERY_KERNEL_MODULES_LOAD))
-
-# Prevent duplicated entries (to solve duplicated build rules problem)
-BOARD_VENDOR_RAMDISK_KERNEL_MODULES := $(sort $(BOARD_VENDOR_RAMDISK_KERNEL_MODULES) $(RECOVERY_MODULES))
+BOARD_VENDOR_RAMDISK_RECOVERY_KERNEL_MODULES := $(addprefix $(KERNEL_PATH)/modules_ramdisk/, $(BOARD_VENDOR_RAMDISK_RECOVERY_KERNEL_MODULES_LOAD))
 
 # Vendor modules (installed to vendor_dlkm)
 BOARD_VENDOR_KERNEL_MODULES_LOAD := $(strip $(shell cat $(KERNEL_PATH)/modules.load))
@@ -117,13 +144,6 @@ BOARD_SYSTEM_EXTIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_PRODUCTIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := erofs
 BOARD_VENDOR_DLKMIMAGE_FILE_SYSTEM_TYPE := erofs
-
-include vendor/halcyon/config/BoardConfigReservedSize.mk
-
-TARGET_COPY_OUT_SYSTEM_EXT := system_ext
-TARGET_COPY_OUT_PRODUCT := product
-TARGET_COPY_OUT_VENDOR := vendor
-TARGET_COPY_OUT_VENDOR_DLKM := vendor_dlkm
 
 # Recovery
 BOARD_MOVE_GSI_AVB_KEYS_TO_VENDOR_BOOT := true
@@ -187,26 +207,3 @@ SYSTEM_EXT_PUBLIC_SEPOLICY_DIRS += $(DEVICE_PATH)/sepolicy/public
 
 # Vibrator
 $(call soong_config_set,mediatek_vibrator,supports_effects,true)
-
-# Wi-Fi
-BOARD_WLAN_DEVICE := MediaTek
-WPA_SUPPLICANT_VERSION := VER_0_8_X
-BOARD_WPA_SUPPLICANT_DRIVER := NL80211
-BOARD_HOSTAPD_PRIVATE_LIB := lib_driver_cmd_mt66xx
-BOARD_HOSTAPD_DRIVER := $(BOARD_WPA_SUPPLICANT_DRIVER)
-BOARD_WPA_SUPPLICANT_PRIVATE_LIB := $(BOARD_HOSTAPD_PRIVATE_LIB)
-WIFI_FEATURE_HOSTAPD_11AX := false
-WIFI_FEATURE_SUPPLICANT_11AX := false
-WIFI_DRIVER_FW_PATH_PARAM := "/dev/wmtWifi"
-WIFI_DRIVER_FW_PATH_STA := "STA"
-WIFI_DRIVER_FW_PATH_AP := "AP"
-WIFI_DRIVER_FW_PATH_P2P := "P2P"
-CONFIG_IEEE80211AX := false
-WIFI_DRIVER_STATE_CTRL_PARAM := $(WIFI_DRIVER_FW_PATH_PARAM)
-WIFI_DRIVER_STATE_ON := "1"
-WIFI_DRIVER_STATE_OFF := "0"
-WIFI_HIDL_UNIFIED_SUPPLICANT_SERVICE_RC_ENTRY := true
-WIFI_HIDL_FEATURE_DUAL_INTERFACE := true
-
-# Inherit the proprietary files
-include vendor/xiaomi/beryl/BoardConfigVendor.mk
